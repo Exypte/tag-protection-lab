@@ -1,0 +1,11 @@
+name: publish on release
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "publishing ${GITHUB_REF_NAME}"
