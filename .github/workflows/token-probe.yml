@@ -1,0 +1,32 @@
+name: token probe (plumber 398)
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/token-probe.yml"]
+  workflow_dispatch:
+jobs:
+  contents-read:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          echo "rulesets listing:"; gh api "repos/$GITHUB_REPOSITORY/rulesets?includes_parents=true&targets=tag" --jq '.[] | "\(.id) \(.name) \(.enforcement)"'
+          id=$(gh api "repos/$GITHUB_REPOSITORY/rulesets?includes_parents=true&targets=tag" --jq '.[0].id')
+          echo "ruleset detail:"; gh api "repos/$GITHUB_REPOSITORY/rulesets/$id?includes_parents=true" --jq '{conditions, rules: [.rules[].type], bypass_actors}'
+          echo "tags:"; gh api "repos/$GITHUB_REPOSITORY/tags" --jq '.[].name'
+  no-permissions:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          echo "rulesets listing:"; gh api "repos/$GITHUB_REPOSITORY/rulesets?includes_parents=true&targets=tag" --jq '.[] | "\(.id) \(.name) \(.enforcement)"'
+          id=$(gh api "repos/$GITHUB_REPOSITORY/rulesets?includes_parents=true&targets=tag" --jq '.[0].id')
+          echo "ruleset detail:"; gh api "repos/$GITHUB_REPOSITORY/rulesets/$id?includes_parents=true" --jq '{conditions, rules: [.rules[].type], bypass_actors}'
+          echo "tags:"; gh api "repos/$GITHUB_REPOSITORY/tags" --jq '.[].name'
